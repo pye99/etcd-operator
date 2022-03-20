@@ -40,7 +40,8 @@ type EtcdClusterStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-
+//+kubebuilder:printcolumn:name="Size",type="integer",JSONPath=".spec.size",description="Replicas of Etcd"
+//+kubebuilder:printcolumn:name="Image",type="string",JSONPath=".spec.image",description="Cluster Image"
 // EtcdCluster is the Schema for the etcdclusters API
 type EtcdCluster struct {
 	metav1.TypeMeta   `json:",inline"`
