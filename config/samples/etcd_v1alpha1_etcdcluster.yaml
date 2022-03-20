@@ -1,0 +1,6 @@
+apiVersion: etcd.fmeng.io/v1alpha1
+kind: EtcdCluster
+metadata:
+  name: etcdcluster-sample
+spec:
+  # TODO(user): Add fields here

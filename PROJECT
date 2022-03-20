@@ -1,0 +1,16 @@
+domain: fmeng.io
+layout:
+- go.kubebuilder.io/v3
+projectName: etcd
+repo: github.com/am2901/etcd-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: fmeng.io
+  group: etcd
+  kind: EtcdCluster
+  path: github.com/am2901/etcd-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"
