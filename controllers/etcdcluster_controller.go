@@ -18,6 +18,9 @@ package controllers
 
 import (
 	"context"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -49,7 +52,38 @@ type EtcdClusterReconciler struct {
 func (r *EtcdClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	var etcdCluster etcdv1alpha1.EtcdCluster
+	if err := r.Get(ctx, req.NamespacedName, &etcdCluster); err != nil {
+		// EtcdCluster was gone，skip
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// CreateOrUpdate Service
+	var svc corev1.Service
+	svc.Name = etcdCluster.Name
+	svc.Namespace = etcdCluster.Namespace
+	or, err := ctrl.CreateOrUpdate(ctx, r.Client, &svc, func() error {
+		MutateHeadlessSvc(&etcdCluster, &svc)
+		return controllerutil.SetControllerReference(&etcdCluster, &svc, r.Scheme)
+	})
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	log.Log.Info("Create Or Update fmeng etcd", "Service", or)
+
+	// CreateOrUpdate StatefulSet
+	var sts appsv1.StatefulSet
+	sts.Name = etcdCluster.Name
+	sts.Namespace = etcdCluster.Namespace
+	or, err = ctrl.CreateOrUpdate(ctx, r.Client, &sts, func() error {
+		MutateStatefulSet(&etcdCluster, &sts)
+		return controllerutil.SetControllerReference(&etcdCluster, &sts, r.Scheme)
+	})
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	log.Log.Info("Create Or Update fmeng etcd", "statefulset", or)
 
 	return ctrl.Result{}, nil
 }
